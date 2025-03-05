@@ -2,7 +2,7 @@ import sqlite3
 import os
 
 class Coin:
-    """Класс монеты для хранения информации о монете"""
+    """Class for a coin to store information about the coin"""
     def __init__(self, coin_id, coin_name, coin_year, coin_country, coin_metal, coin_weight, coin_price):
         self.coin_id = coin_id
         self.coin_name = coin_name
@@ -13,21 +13,19 @@ class Coin:
         self.coin_price = coin_price
 
     def __repr__(self):
-        """Метод для представления монеты в виде строки"""
+        """Method to represent the coin as a string"""
         return f"Coin(id={self.coin_id}, {self.coin_name}, {self.coin_year}, {self.coin_country}, {self.coin_metal}, {self.coin_weight}g, ${self.coin_price})"
 
 
 class CoinCollection:
-    """Класс коллекции монет для хранения и управления монетами в базе данных"""
+    """Class for a coin collection to store and manage coins in the database"""
     def __init__(self, db_file='coins.db'):
-        # Получаем путь к каталогу, где находится текущий скрипт
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        # Составляем полный путь к базе данных, используя текущую директорию
         self.db_file = os.path.join(script_dir, db_file)
         self.create_table()
 
     def create_table(self):
-        """Метод для создания таблицы в базе данных, если она не существует"""
+        """Method to create a table in the database if it does not exist"""
         if not os.path.exists(self.db_file):
             conn = sqlite3.connect(self.db_file)
             c = conn.cursor()
@@ -43,9 +41,9 @@ class CoinCollection:
             conn.close()
 
     def add_coin(self, coin):
-        """Метод добавления монеты в коллекцию в базе данных"""
+        """Method to add a coin to the collection in the database"""
         
-        # Проверяем уникальность coin_id
+        # Check if coin_id is unique
         conn = sqlite3.connect(self.db_file)
         c = conn.cursor()
         c.execute('SELECT coin_id FROM coins WHERE coin_id = ?', (coin.coin_id,))
@@ -54,7 +52,7 @@ class CoinCollection:
         if existing_coin:
             raise ValueError(f"Coin ID {coin.coin_id} already exists in the database.")
 
-        # Если coin_id уникален, добавляем монету в базу данных
+        # If coin_id is unique, add the coin to the database
         c.execute('''INSERT INTO coins (coin_id, coin_name, coin_year, coin_country, coin_metal, coin_weight, coin_price) 
                     VALUES (?, ?, ?, ?, ?, ?, ?)''', 
                 (coin.coin_id, coin.coin_name, coin.coin_year, coin.coin_country, coin.coin_metal, coin.coin_weight, coin.coin_price))
@@ -62,7 +60,7 @@ class CoinCollection:
         conn.close()
 
     def get_all_coins(self):
-        """Метод получения всех монет из коллекции из базы данных"""
+        """Method to get all coins from the collection in the database"""
         conn = sqlite3.connect(self.db_file)
         c = conn.cursor()
         c.execute('SELECT * FROM coins')
@@ -71,7 +69,7 @@ class CoinCollection:
         return [Coin(*coin) for coin in coins]
 
     def del_coin(self, coin_id):
-        """Метод удаления монеты из коллекции по ID из базы данных"""
+        """Method to delete a coin from the collection by ID from the database"""
         conn = sqlite3.connect(self.db_file)
         c = conn.cursor()
         c.execute('DELETE FROM coins WHERE coin_id = ?', (coin_id,))
@@ -79,29 +77,25 @@ class CoinCollection:
         conn.close()
 
     def find_coin_by_params(self, **params):
-        """Метод для поиска монет по различным параметрам из базы данных"""
+        """Method to find coins by various parameters from the database"""
         conn = sqlite3.connect(self.db_file)
         c = conn.cursor()
 
-        # Формирование запроса
         query = 'SELECT * FROM coins WHERE '
         query_conditions = []
         query_values = []
 
-        # Проверяем, что есть хотя бы один параметр для поиска
         if not params:
-            return []  # Если параметры пустые, возвращаем пустой список
+            return []
 
-        # Добавляем условия для каждого параметра
         for key, value in params.items():
-            if value:  # Пропускаем пустые значения
+            if value:
                 query_conditions.append(f'{key} = ?')
                 query_values.append(value)
 
         if not query_conditions:
-            return []  # Если нет условий, возвращаем пустой список
+            return []
 
-        # Строим полный запрос
         query += ' AND '.join(query_conditions)
         
         try:
@@ -116,10 +110,9 @@ class CoinCollection:
 
 
     def update_coin(self, coin_id, new_coin_data):
-        """Метод для обновления данных монеты по ID в базе данных"""
+        """Method to update coin data by ID in the database"""
         conn = sqlite3.connect(self.db_file)
         c = conn.cursor()
-        # Строим динамическое обновление на основе новых данных
         update_columns = []
         update_values = []
         
